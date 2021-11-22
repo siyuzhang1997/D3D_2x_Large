@@ -30,7 +30,7 @@ D = 2
 No = 81
 kernel_size = [3, 3, 3]
 input = torch.ones(B, Ci, H, W, D).cuda()
-input[:,:,:,1:3,:] = 2 * input[:,:,:,1:3,:]
+# input[:,:,:,1:3,:] = 2 * input[:,:,:,1:3,:]
 offset = torch.ones(B, No, H, W, D).cuda()
 weight = torch.ones(Co, Ci, kernel_size[0], kernel_size[1], kernel_size[2]).cuda()
 bias = None
@@ -55,7 +55,7 @@ def _get_p_n(N, dtype):
 
     # (3N, 1) - 3 coords for each of N offsets
     # (x1, ... xN, y1, ... yN, z1, ... zN)
-    p_n = np.concatenate((p_n_x.flatten(), p_n_y.flatten(), p_n_z.flatten()))
+    p_n = np.concatenate((p_n_y.flatten(), p_n_z.flatten(), p_n_x.flatten()))
     p_n = np.reshape(p_n, (1, 3 * N, 1, 1, 1))
     p_n = torch.from_numpy(p_n).type(dtype)
 
@@ -99,7 +99,7 @@ def _reshape_x_offset(x_offset, ks):
         for j in range(0, w):
             for k in range(0, d):
                         result[:,:,i * ks:i * ks + ks, j * ks:j *ks +ks, k * ks:k *ks + ks] = x_offset[:, :, i, j, k, :].view(b, c, ks, ks, ks)
-    result = result.permute(0, 1, 4, 2, 3)
+    
     return result
 
 dtype = offset.data.type()
@@ -181,6 +181,7 @@ output = F.conv3d(
     stride,
     padding,
 )
+output = output.permute(0, 1, 4, 2, 3)
 # print(output)
 stride_1 = (1, 1, 1)
 padding_1 = (1,1,1)
